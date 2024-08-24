@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body onload="calculateResult()">
+    <div class="p-10 mb-8">
+      <h1 class="mb-8 font-extrabold text-2xl">NBFC Collection Prediction</h1>
+      <div class="flex flex-col justify-evenly ">
+        <form onsubmit="return calculateResult()" class="flex flex-col">
+          <div class="mt-4 px-4">
+            <label class="block font-semibold" for="amount">Initial Amount</label>
+            <input
+              class="w-full shadow-inner bg-gray-100 rounded-lg placeholder-black text-2xl p-4 border-none block mt-1 w-full"
+              id="amount"
+              type="number"
+              name="amount"
+              required="required"
+              autofocus="autofocus"
+              value="2500000"
+            />
+          </div>
+          <div class="mt-4 px-4">
+            <label class="block font-semibold" for="interestRate">Interest Rate</label>
+            <input
+              class="w-full shadow-inner bg-gray-100 rounded-lg placeholder-black text-2xl p-4 border-none block mt-1 w-full"
+              id="interestRate"
+              type="number"
+              name="interestRate"
+              required="required"
+              autofocus="autofocus"
+              value="3"
+            />
+          </div>
+
+          <div class="mt-4 px-4">
+            <label class="block font-semibold" for="avgTenure">Average Loan Tenure (In Months)</label>
+            <input
+              class="w-full shadow-inner bg-gray-100 rounded-lg placeholder-black text-2xl p-4 border-none block mt-1 w-full"
+              id="avgTenure"
+              type="number"
+              name="avgTenure"
+              required="required"
+              value="6"
+            />
+          </div>
+
+          <div class="mt-4 px-4">
+            <label class="block font-semibold" for="projection">Projected Duration (In Months)</label>
+            <input
+              class="w-full shadow-inner bg-gray-100 rounded-lg placeholder-black text-2xl p-4 border-none block mt-1 w-full"
+              id="projection"
+              type="number"
+              name="projection"
+              required="required"
+              value="12"
+            />
+          </div>
+
+          <div class="mt-4 px-4">
+            <label class="block font-semibold" for="collectionRate">Collection Ratio Percentage</label>
+            <input
+              class="w-full shadow-inner bg-gray-100 rounded-lg placeholder-black text-2xl p-4 border-none block mt-1 w-full"
+              id="collectionRate"
+              type="number"
+              name="collectionRate"
+              required="required"
+              value="100"
+            />
+          </div>
+
+          <div class="mt-4 px-4">
+            <label class="block font-semibold" for="expense">Expense Per Month</label>
+            <input
+              class="w-full shadow-inner bg-gray-100 rounded-lg placeholder-black text-2xl p-4 border-none block mt-1 w-full"
+              id="expense"
+              type="number"
+              name="expense"
+              required="required"
+              value="15000"
+            />
+          </div>
+
+          <div class="flex items-center justify-between mt-8 px-4 w-full">
+            <button
+              type="submit"
+              class="flex items-center justify-center px-8 py-3 border border-transparent w-full
+               text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 
+               md:py-4 md:text-lg md:px-10" 
+            >
+              Calculate Projection
+            </button>
+          </div>
+        </form>
+
+          <div id="calculation" class="bg-gray-100 mx-4 px-2 py-4 rounded my-8 flex-grow">
+            <h6 class="font-bold text-2xl">Collection Per Week</h6>
+            <h1 class="font-bold text-3xl" id="collection-per-week"></h1>
+          </div>
+
+          <div id="calculation" class="bg-gray-100 mx-4 px-2 py-4 rounded my-8 flex-grow">
+            <h6 class="font-bold text-2xl">Amount in Circulation</h6>
+            <h1 class="font-bold text-3xl" id="money-in-circulation"></h1>
+          </div>
+      </div>
+   
+
+    <script>
+     function formatIndianCurrency(num) {
+        if (num >= 10000000) {
+          return "₹ " + (num / 10000000).toFixed(2) + " crores";
+        } else if (num >= 100000) {
+          return "₹ " + (num / 100000).toFixed(2) + " lakhs";
+        } else {
+          return "₹ " + num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+      }
+
+      function calculateCollectionPerWeek(initialAmount, interestRate, avgTenure, projection, collectionRate, expensePerMonth) {
+        // perform calculation here
+        const interestRatePerMonth = interestRate;
+        const durationInMonths = avgTenure;
+        collectionRate = collectionRate/100;
+        const targetWeek = projection * 4;
+
+        let emiMatrix = Array(targetWeek).fill(0).map(() => Array(targetWeek).fill(0));
+        let weeklyFund = initialAmount;
+        let totalEmis = durationInMonths * 4;
+        let totalEmiCollectionPerWeek = Array(targetWeek).fill(0);
+        let totalAmountForRotation = Array(targetWeek).fill(0);
+        let rotationCount = 0;
+   
+        for (let week = 0; week < targetWeek; week++, rotationCount++) {
+          weeklyFund = week > 0 ? collectionRate * emiMatrix[week - 1].reduce((a, b) => a + b, 0) : weeklyFund;
+
+          const interestAmount = (weeklyFund * interestRatePerMonth / 100) * durationInMonths;
+          const estimatedCollection = weeklyFund + interestAmount - expensePerMonth/4;
+          totalAmountForRotation[rotationCount] = estimatedCollection;
+          const emiPerWeek = Math.floor(estimatedCollection / totalEmis);
+
+          for (let emiWeek = week, j = 0; j < totalEmis && emiWeek < targetWeek; emiWeek++, j++) {
+            emiMatrix[emiWeek][rotationCount] = emiPerWeek;
+          }
+        }
+
+        for (let i = 0; i < targetWeek; i++) {
+          totalEmiCollectionPerWeek[i] = emiMatrix[i].reduce((a, b) => a + b, 0);
+        }
+
+        console.log(totalEmiCollectionPerWeek);
+
+        let dueAmountInRotation = Array(targetWeek).fill(0);
+        for (let i = 0; i < targetWeek; i++) {
+          dueAmountInRotation[i] = totalAmountForRotation[i] - emiMatrix.reduce((a, row) => a + row[i], 0);
+        }
+
+        const totalAmountPending = Math.floor(dueAmountInRotation.reduce((a, b) => a + b, 0));
+        console.log(totalAmountPending);
+        
+        return {moneyInCirculation: totalAmountPending, collectionPerWeek: totalEmiCollectionPerWeek[projection-1]};
+      }
+
+      function calculateResult() {
+        let initialAmount = parseInt(document.getElementById("amount").value);
+        let interestRate = parseInt(document.getElementById("interestRate").value);
+        let avgTenure = parseInt(document.getElementById("avgTenure").value);
+        let projection = parseInt(document.getElementById("projection").value);
+        let collectionRate = parseInt(document.getElementById("collectionRate").value);
+        let expensePerMonth = parseInt(document.getElementById("expense").value);
+
+        let collection = calculateCollectionPerWeek(initialAmount, interestRate, avgTenure, projection, collectionRate, expensePerMonth);
+
+        document.getElementById("collection-per-week").innerHTML = formatIndianCurrency(collection.collectionPerWeek.toFixed(0));
+        document.getElementById("money-in-circulation").innerHTML = formatIndianCurrency(collection.moneyInCirculation.toFixed(0));
+
+        return false; // prevent form submission
+      }
+    </script>
+  </body>
+</html>
