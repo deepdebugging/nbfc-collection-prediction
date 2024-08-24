@@ -95,6 +95,11 @@
           </div>
         </form>
 
+        <div id="calculation" class="bg-gray-100 mx-4 px-2 py-4 rounded my-8 flex-grow">
+          <h6 class="font-bold text-2xl">Profit</h6>
+          <h1 class="font-bold text-3xl" id="profit"></h1>
+        </div>
+        
           <div id="calculation" class="bg-gray-100 mx-4 px-2 py-4 rounded my-8 flex-grow">
             <h6 class="font-bold text-2xl">Collection Per Week</h6>
             <h1 class="font-bold text-3xl" id="collection-per-week"></h1>
@@ -104,6 +109,8 @@
             <h6 class="font-bold text-2xl">Amount in Circulation</h6>
             <h1 class="font-bold text-3xl" id="money-in-circulation"></h1>
           </div>
+
+        
       </div>
    
 
@@ -174,6 +181,7 @@
 
         document.getElementById("collection-per-week").innerHTML = formatIndianCurrency(collection.collectionPerWeek.toFixed(0));
         document.getElementById("money-in-circulation").innerHTML = formatIndianCurrency(collection.moneyInCirculation.toFixed(0));
+        document.getElementById("profit").innerHTML = formatIndianCurrency(collection.moneyInCirculation.toFixed(0) - initialAmount);
 
         return false; // prevent form submission
       }
