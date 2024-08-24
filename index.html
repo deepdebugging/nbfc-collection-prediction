@@ -23,7 +23,7 @@
             />
           </div>
           <div class="mt-4 px-4">
-            <label class="block font-semibold" for="interestRate">Interest Rate</label>
+            <label class="block font-semibold" for="interestRate">Annual Interest Rate</label>
             <input
               class="w-full shadow-inner bg-gray-100 rounded-lg placeholder-black text-2xl p-4 border-none block mt-1 w-full"
               id="interestRate"
@@ -120,7 +120,7 @@
 
       function calculateCollectionPerWeek(initialAmount, interestRate, avgTenure, projection, collectionRate, expensePerMonth) {
         // perform calculation here
-        const interestRatePerMonth = interestRate;
+        const interestRatePerMonth = interestRate/12;
         const durationInMonths = avgTenure;
         collectionRate = collectionRate/100;
         const targetWeek = projection * 4;
